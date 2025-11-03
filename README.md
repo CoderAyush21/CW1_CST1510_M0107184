@@ -1,1 +1,1 @@
-# Pyhton Code for Project for module CST1510
+# Python Project for CST1510
