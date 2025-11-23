@@ -1,15 +1,15 @@
 from app.data.db import connect_database
 import pandas as pd
 
-def insert_ticket(ticket_id, priority, description, status, assigned_to=None, resolution_time_hours=None):
+def insert_ticket(priority, description, status, assigned_to=None, resolution_time_hours=None):
     """Insert a new IT ticket."""
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO it_tickets
-        (ticket_id, priority, description, status, assigned_to, created_at, resolution_time_hours)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
-    """, (ticket_id, priority, description, status, assigned_to, resolution_time_hours))
+        (priority, description, status, assigned_to, created_at, resolution_time_hours)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+    """, (priority, description, status, assigned_to, resolution_time_hours))
     conn.commit()
     last_id = cursor.lastrowid
     conn.close()

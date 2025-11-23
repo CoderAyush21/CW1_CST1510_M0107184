@@ -2,15 +2,15 @@ from app.data.db import connect_database
 import pandas as pd
 
 
-def insert_dataset(dataset_id, name, rows, columns, uploaded_by=None):
+def insert_dataset( name, rows, columns, uploaded_by=None):
     """Insert a new dataset."""
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO datasets_metadata
-        (dataset_id, name, rows, columns, uploaded_by, upload_date)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    """, (dataset_id, name, rows, columns, uploaded_by))
+        (name, rows, columns, uploaded_by, upload_date)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    """, ( name, rows, columns, uploaded_by))
     conn.commit()
     last_id = cursor.lastrowid
     conn.close()

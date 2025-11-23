@@ -6,7 +6,7 @@ def create_users_table(conn):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
-            role TEXT DEFAULT 'user'
+            role TEXT DEFAULT 'user',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP       
         )
     """)
@@ -40,7 +40,7 @@ def create_datasets_metadata_table(conn):
             rows INTEGER NOT NULL,
             columns INTEGER NOT NULL,
             uploaded_by TEXT NOT NULL,
-            upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (uploaded_by) REFERENCES users(username)       
         )
     """)

@@ -2,15 +2,15 @@ from app.data.db import connect_database
 import pandas as pd
 
 
-def insert_incident(incident_id, severity, category, status, description, reported_by=None, timestamp=None):
+def insert_incident(severity, category, status, description, reported_by=None, timestamp=None):
     """Insert a new cyber incident. Returns ID of inserted row."""
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO cyber_incidents
-        (incident_id, timestamp, severity, category, status, description, reported_by)
-        VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?)
-    """, (incident_id, timestamp, severity, category, status, description, reported_by))
+        (timestamp, severity, category, status, description, reported_by)
+        VALUES ( COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?)
+    """, (timestamp, severity, category, status, description, reported_by))
     conn.commit()
     last_id = cursor.lastrowid
     conn.close()
