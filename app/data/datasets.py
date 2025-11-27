@@ -17,13 +17,13 @@ def insert_dataset( name, rows, columns, uploaded_by=None):
     return last_id
 
 
-def get_incident_by_id(incident_id):
+def get_datasets_by_id(dataset_id):
     conn = connect_database()
     
     df = pd.read_sql_query(
-        "SELECT * FROM cyber_incidents WHERE incident_id = ?",
+        "SELECT * FROM datasets_metadata WHERE dataset_id = ?",
         conn,
-        params=(incident_id,)  
+        params=(dataset_id,)  
     )
     
     conn.close()
