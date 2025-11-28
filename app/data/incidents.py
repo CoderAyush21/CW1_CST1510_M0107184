@@ -16,6 +16,7 @@ def insert_incident(severity, category, status, description, reported_by=None, t
     conn.close()
     return last_id
 
+
 def get_incident_by_id(incident_id):
     conn = connect_database()
 
