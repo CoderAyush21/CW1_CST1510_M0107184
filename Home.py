@@ -22,7 +22,7 @@ if "show_register" not in st.session_state:
 
 
 if not st.session_state.logged_in:
-
+    
         st.markdown(
             """
           <h1 style="text-align:center; 
@@ -54,7 +54,6 @@ if not st.session_state.logged_in:
             """
             <div style="width:100%; text-align:center; margin-top:px;">
                 <h1 style="color:#1E90FF; font-size: 35px; text-align:center;">Access Your Dashboard</h1>
-                <p style="font-size:18px; color:gray; text-align:left; margin-left : 232px">Login or Register to continue</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -62,20 +61,26 @@ if not st.session_state.logged_in:
 
 
         # Button for login/registration
+      
+        col= st.columns(1)[0]
+        
+        with col: 
+                 
 
-        col1, col2, col3 = st.columns([2,2,2])
+            col1,col2, col3= st.columns([2,2,2])
 
-        with col2: 
-            b1,b2 = st.columns([1,1])
-            with b1:
-                if st.button("Login", key="login_button"):
+            with col2:
+                b1,b2= st.columns([1,1])
+                with b1:
+                  if st.button("Login", key="login_button"):
                     st.session_state.show_login = True
                     st.session_state.show_register = False
 
-            with b2:
-                if st.button("Register", key="register_button"):
+                with b2:
+                  if st.button("Register", key="register_button"):
                     st.session_state.show_register = True
                     st.session_state.show_login = False
+
 
 
         if st.session_state.show_login and not st.session_state.logged_in:
@@ -116,7 +121,7 @@ elif st.session_state.logged_in:
         justify-content: center;
         align-items: center;
         text-align: center;
-        margin-top: 30px;
+        margin-top: 10px;
     ">
         <h1 style="
             font-size: 45px;
