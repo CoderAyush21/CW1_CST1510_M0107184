@@ -163,67 +163,6 @@ with col1:
 
 
 
-
-    
-# Get all incident ids as list for the update form
-all_incident_ids= df_incidents['incident_id'].tolist()
-
-col1,col2,col3= st.columns(3)
-with col1:
-
-    # Add Incidents Form
-    st.markdown("### Add Cyber Incidents ###")
-    with st.form("Add new incident"):
-        severity = st.selectbox("Severity", ["Low", "Medium", "High","Critical"])
-        category = st.selectbox("Incident Type", ["Malware", "Phishing", "DDoS","Unauthorized Access","Misconfiguration"])
-        status = st.selectbox("Status", ["Open", "Closed", "In Progress","Resolved"])
-        reported_by = st.text_input("Reported By")
-        description = st.text_input("Description")
-        submitted = st.form_submit_button("Submit")
-
-    if submitted:
-        incident_datetime= datetime.now()
-        try :
-            insert_incident(severity,category,status,description,reported_by,incident_datetime)
-            st.success("Incident added")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error adding incident: {e}")
-with col2:
-    st.markdown("### Update Incident Status")
-    with st.form("Update incident status"):
-        incident_id = st.selectbox("Incident ID", all_incident_ids)
-        new_status = st.selectbox("New Status", ["Open", "Closed", "In Progress","Resolved"])
-        updated = st.form_submit_button("Update Status")
-    if updated:
-        try:
-            success = update_incident_status(incident_id, new_status)
-            if success:
-                st.success("Incident status updated")
-                st.rerun()
-            else:
-                st.error("Incident ID not found")
-        except Exception as e:
-            st.error(f"Error updating incident: {e}")
-with col3:
-    st.markdown("### Delete Cyber Incident")
-    with st.form("Delete incident"):
-        incident_id= st.selectbox("Incident ID to Delete", all_incident_ids, key="delete_incident_id")
-        
-        submitted= st.form_submit_button("Delete Incident")
-
-        if submitted:
-            if st.checkbox("Confirm deletion of incident #{incident_id}?"):                
-                deleted = delete_incident(incident_id)
-                if deleted:
-                        st.success("Incident deleted")
-                        st.rerun()
-                else:
-                        st.error("Incident ID not found")
-            else:
-                st.warning("Please confirm deletion by checking the box.")
-
-
 df_high_sev_status = get_high_severity_by_status(conn)
 
 # Display Cyber Incidents Bar Chart by Severity
@@ -238,13 +177,13 @@ with col1:
         y="count",
         text="count",
         color="status",
-        color_discrete_sequence=["#0078FF", "#00C4B4", "#2E86DE"],  # neon aqua shades
+        color_discrete_sequence=["#0078FF", "#00C4B4", "#2E86DE"],  
     )
 
     fig.update_traces(
         textposition="outside",
         marker=dict(
-            line=dict(width=1.2, color="#003F88"),  # neon outline
+            line=dict(width=1.2, color="#003F88"),  
         )
     )
 
@@ -259,3 +198,72 @@ with col1:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+
+
+    
+# Get all incident ids as list for the update form
+all_incident_ids= df_incidents['incident_id'].tolist()
+
+st.subheader("Cyber Incidents Management")
+col1,col2= st.columns([0.8,0.2])
+with col1:
+    action_choice = st.selectbox("Select Action", ([" Add Incident", " Update Status", "Delete Incident"]), key="action_choice")
+
+
+    if action_choice == " Add Incident":
+        # Add Incidents Form
+        st.markdown("### Add Cyber Incidents ###")
+        with st.form("Add new incident"):
+            severity = st.selectbox("Severity", ["Low", "Medium", "High","Critical"])
+            category = st.selectbox("Incident Type", ["Malware", "Phishing", "DDoS","Unauthorized Access","Misconfiguration"])
+            status = st.selectbox("Status", ["Open", "Closed", "In Progress","Resolved"])
+            reported_by = st.text_input("Reported By")
+            description = st.text_input("Description")
+            submitted = st.form_submit_button("Submit")
+
+        if submitted:
+            incident_datetime= datetime.now()
+            try :
+                insert_incident(severity,category,status,description,reported_by,incident_datetime)
+                st.success("Incident added")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error adding incident: {e}")
+
+    elif action_choice == " Update Status":
+        st.markdown("### Update Incident Status")
+        with st.form("Update incident status"):
+            incident_id = st.selectbox("Incident ID", all_incident_ids)
+            new_status = st.selectbox("New Status", ["Open", "Closed", "In Progress","Resolved"])
+            updated = st.form_submit_button("Update Status")
+        if updated:
+            try:
+                success = update_incident_status(incident_id, new_status)
+                if success:
+                    st.success("Incident status updated")
+                    st.rerun()
+                else:
+                    st.error("Incident ID not found")
+            except Exception as e:
+                st.error(f"Error updating incident: {e}")
+
+    elif action_choice == "Delete Incident":
+        st.markdown("### Delete Cyber Incident")
+        with st.form("Delete incident"):
+            incident_id= st.selectbox("Incident ID to Delete", all_incident_ids, key="delete_incident_id")
+            
+            submitted= st.form_submit_button("Delete Incident")
+
+            if submitted:
+                if st.checkbox("Confirm deletion of incident"):                
+                    deleted = delete_incident(incident_id)
+                    if deleted:
+                            st.success("Incident deleted")
+                            st.rerun()
+                    else:
+                            st.error("Incident ID not found")
+                else:
+                    st.warning("Please confirm deletion by checking the box.")
+
+
