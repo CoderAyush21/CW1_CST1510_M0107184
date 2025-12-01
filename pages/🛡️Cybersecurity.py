@@ -5,6 +5,7 @@ import plotly.express as px
 from datetime import datetime
 from app.data.db import connect_database
 from app.services.analyticalQueries import  get_high_severity_by_status, get_incident_types_with_many_cases
+import time
 
 conn = connect_database()
 
@@ -227,6 +228,7 @@ with col1:
             try :
                 insert_incident(severity,category,status,description,reported_by,incident_datetime)
                 st.success("Incident added")
+                time.sleep(2)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error adding incident: {e}")
@@ -242,6 +244,7 @@ with col1:
                 success = update_incident_status(incident_id, new_status)
                 if success:
                     st.success("Incident status updated")
+                    time.sleep(2)
                     st.rerun()
                 else:
                     st.error("Incident ID not found")
@@ -260,6 +263,7 @@ with col1:
                     deleted = delete_incident(incident_id)
                     if deleted:
                             st.success("Incident deleted")
+                            time.sleep(2)
                             st.rerun()
                     else:
                             st.error("Incident ID not found")

@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime
 from app.data.tickets import insert_ticket, get_all_tickets, update_ticket_status, delete_ticket
 from app.services.analyticalQueries import get_avg_resolution_by_staff, get_high_priority_tickets_by_status, get_slow_resolution_tickets, get_tickets_by_priority
+import time
 st.set_page_config(
     page_title="IT Operations",
     layout="wide",
@@ -133,6 +134,7 @@ with col1:
             try :
                 insert_ticket(priority,description,status, assigned_to,resolution_time,ticket_datetime)
                 st.success("Ticket added")
+                time.sleep(2)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error adding incident: {e}")
@@ -148,6 +150,7 @@ with col1:
                 success = update_ticket_status(incident_id, new_status)
                 if success:
                     st.success("Ticket status updated")
+                    time.sleep(2)
                     st.rerun()
                 else:
                     st.error("Ticket ID not found")
@@ -166,6 +169,7 @@ with col1:
                     deleted = delete_ticket(ticket_id)
                     if deleted:
                             st.success("Ticket deleted")
+                            time.sleep(2)
                             st.rerun()
                     else:
                             st.error("Ticket ID not found")

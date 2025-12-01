@@ -5,6 +5,7 @@ from app.data.db import connect_database
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
+import time
 
 st.set_page_config(
     page_title="Data Science",
@@ -99,6 +100,7 @@ with col1:
             try :
                 insert_dataset(name,rows,columns,uploaded_by)
                 st.success("Dataset added")
+                time.sleep(2)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error adding dataset: {e}")
@@ -113,6 +115,7 @@ with col1:
                 success = update_dataset_name(dataset_id, new_name)
                 if success:
                     st.success("Dataset Name updated")
+                    time.sleep(2)
                     st.rerun()
                 else:
                     st.error("Dataset ID not found")
@@ -129,9 +132,10 @@ with col1:
                 if st.checkbox("Confirm deletion of dataset"):                
                     deleted = delete_dataset(dataset_id)
                     if deleted:
-                            st.success("Incident deleted")
+                            st.success("Dataset deleted")
+                            time.sleep(2)
                             st.rerun()
                     else:
-                            st.error("Incident ID not found")
+                            st.error("Dataset ID not found")
                 else:
                     st.warning("Please confirm deletion by checking the box.")
