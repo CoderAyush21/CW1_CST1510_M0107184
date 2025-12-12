@@ -1,23 +1,21 @@
 import pandas as pd
+from app.advanced_services.database_manager import DatabaseManager
 
 # Analytical queries for cyber incidents.
-def get_incidents_by_type_count(conn):
-    
-    # Count incidents by type/category.
-    
+def get_incidents_by_type_count(db: DatabaseManager):
+
     query = """
     SELECT category, COUNT(*) as count
     FROM cyber_incidents
     GROUP BY category
     ORDER BY count DESC
     """
-    df = pd.read_sql_query(query, conn)
+    rows = db.fetch_all(query)
+    df = pd.DataFrame(rows, columns=["category", "count"])
     return df
 
-def get_high_severity_by_status(conn):
-    
-    # Count high severity incidents by status.
-   
+def get_high_severity_by_status(db: DatabaseManager):
+
     query = """
     SELECT status, COUNT(*) as count
     FROM cyber_incidents
@@ -25,29 +23,24 @@ def get_high_severity_by_status(conn):
     GROUP BY status
     ORDER BY count DESC
     """
-    df = pd.read_sql_query(query, conn)
+    rows = db.fetch_all(query)
+    df = pd.DataFrame(rows, columns=["status", "count"])
     return df
 
-
-def get_high_severity_incidents(conn):
-    # Get all high severity incidents
+def get_high_severity_incidents(db: DatabaseManager):
 
     query = """
-        SELECT *
-        FROM cyber_incidents
-        WHERE severity = 'High'
-        ORDER BY incident_id ASC
+    SELECT *
+    FROM cyber_incidents
+    WHERE severity = 'High'
+    ORDER BY incident_id ASC
     """
-    
-    df = pd.read_sql_query(query, conn)
+    rows = db.fetch_all(query)
+    df = pd.DataFrame(rows, columns=["incident_id","category","severity","status","description","timestamp","reported_by"])
     return df
 
+def get_incident_types_with_many_cases(db: DatabaseManager, min_count=5):
 
-
-def get_incident_types_with_many_cases(conn, min_count=5):
-   
-    # Find incident types with more than min_count cases.
-    
     query = """
     SELECT category, COUNT(*) as count
     FROM cyber_incidents
@@ -55,7 +48,8 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     HAVING COUNT(*) > ?
     ORDER BY count DESC
     """
-    df = pd.read_sql_query(query, conn, params=(min_count,))
+    rows = db.fetch_all(query, (min_count,))
+    df = pd.DataFrame(rows, columns=["category", "count"])
     return df
 
 
