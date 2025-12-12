@@ -45,7 +45,7 @@ with st.sidebar:
         st.rerun()
 
 # User input
-prompt = st.chat_input("Say Something")
+prompt = st.chat_input("Ask me anything about one of the three domains ! ")
 
 if prompt:
 
@@ -59,11 +59,21 @@ if prompt:
         "parts": [{"text": prompt}]
     })
 
+    ai_prompt= """
+    You are an expert assistant across 3 domains:
+    - IT Operations (tickets, troubleshooting, resolution strategies)
+    - Cybersecurity (incidents, threat analysis, risk assessment)
+    - Data Science (datasets, modelling, trends, KPIs)
+
+    Respond clearly, professionally, and with actionable guidance.
+    Tailor responses to the user's message.
+    """
+
     # Send to Gemini
     response = client.models.generate_content_stream(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
-            system_instruction="You are an obedient dog. Your name is Neko."),
+            system_instruction= ai_prompt),
         contents=st.session_state.messages,
     )
 
@@ -72,9 +82,12 @@ if prompt:
         container = st.empty()
         full_reply = ""
         for chunk in response:
-            full_reply += chunk.text
+            full_reply += (chunk.text or "")
             container.markdown(full_reply)
 
     # Save assistant message
     st.session_state.messages.append({"role": "model", "parts": [{"text": full_reply}]})
     st.rerun()
+
+
+
