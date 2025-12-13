@@ -1,8 +1,23 @@
 from datetime import datetime
 
+'''
+    Class represents a Ticket entity stored in the database
+    -> Uses encapsulation to keep data secured using the '__' before attributes
+    -> Declare getters to access the attributes
+
+'''
+
+
 class IT_Ticket:
 
     def __init__(self, ticket_id, priority, description, status, assigned_to=None, resolution_time_hours=None, created_at=None):
+
+        '''
+        Constructor to initialise a Ticket object
+        -> Use of private attributes declaration techniques
+
+        '''
+                
         self.__id = ticket_id
         self.__priority = priority
         self.__description = description
@@ -11,6 +26,8 @@ class IT_Ticket:
         self.__resolution_time_hours = resolution_time_hours
         self.__created_at = created_at
 
+
+    # Getters to get and return the attributes - > Use of encapsulation 
     def get_id(self):
         return self.__id
 
@@ -32,9 +49,21 @@ class IT_Ticket:
     def get_created_at(self):
         return self.__created_at
 
+    '''
 
+    Use of classmethod since it creates and returns value without needing to create an instance to use it
+
+    '''
     @classmethod
     def load_by_id(cls, db, ticket_id):
+
+        '''
+
+        Loads a Ticket object from the database using its ID.
+
+        '''
+
+
         sql = """
             SELECT ticket_id, priority, description, status, assigned_to, resolution_time_hours, created_at
             FROM it_tickets
@@ -53,11 +82,19 @@ class IT_Ticket:
             created_at=row[6]
         )
 
+
+    # Update the status of a ticket in the database
     def update_status(self, db, status):
         self.__status = status
+
+        # Implement the sql queries to find the ticket to be updated
+
         sql = "UPDATE it_tickets SET status = ? WHERE ticket_id = ?"
         cur = db.execute_query(sql, (self.__status, self.__id))
         return cur.rowcount > 0
+    
+
+    # Insert the new ticket in the database
 
     def insert_ticket(self, db):
         sql = """
@@ -76,7 +113,9 @@ class IT_Ticket:
         ))
         self.__id = cur.lastrowid
         return self.__id
+    
 
+    # Delete a ticket 
     def delete(self, db):
         sql = "DELETE FROM it_tickets WHERE ticket_id = ?"
         cur = db.execute_query(sql, (self.__id,))

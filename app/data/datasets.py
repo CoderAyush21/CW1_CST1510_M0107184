@@ -18,6 +18,10 @@ def insert_dataset( name, rows, columns, uploaded_by=None):
 
 
 def get_datasets_by_id(dataset_id):
+    '''
+    Get all datasets row using their ID in the query process
+
+    '''
     conn = connect_database()
     
     df = pd.read_sql_query(
@@ -50,6 +54,10 @@ def update_dataset_name(dataset_id, new_name):
 
 
 def delete_dataset(dataset_id):
+    '''
+    Delete a dataset using its ID in the query
+    
+    '''
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM datasets_metadata WHERE dataset_id = ?", (dataset_id,))

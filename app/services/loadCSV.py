@@ -26,6 +26,10 @@ def load_csv_to_table(conn, csv_path, table_name: str) -> int:
         
         print(f"Success: Loaded {row_count} rows into table '{table_name}'.")
         return row_count
+    
+     
+    # Flag different types of errros when loading csv files to ensure that the files are inserted correctly
+          
 
     except FileNotFoundError:
         print(f"Error: CSV file not found at path: {csv_path}", file=sys.stderr)

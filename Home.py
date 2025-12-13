@@ -4,12 +4,12 @@ import os
 import time
 
 
-
+# Configure project root path- modules inside app folder can be imported coorectly without any error
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)
 
 
-
+# Import classes AuthManager and Database manager for authentication and connection to database
 from app.advanced_services.database_manager import DatabaseManager
 from app.advanced_services.auth_manager import AuthManager  
 
@@ -18,6 +18,8 @@ db = DatabaseManager("DATA/intelligence_platform.db")
 db.connect()
 auth = AuthManager(db)
 
+# Initialising session states
+# Session state allows values to persist across reruns
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -30,9 +32,13 @@ if "show_register" not in st.session_state:
     st.session_state.show_register = False
 
 
-
+# If the user is not yet logged in i.e when the user first enters the web page, the below appears on screen
 if not st.session_state.logged_in:
-    
+
+    # Display titles and details about the web page
+
+  
+
     st.markdown(
             """
           <h1 style="text-align:center; 
@@ -72,13 +78,15 @@ if not st.session_state.logged_in:
 
 
     # Button for login/registration
-      
+    # Use columns to separate the buttons on the web page using correct spacing
+
     col1,col2,col3= st.columns([3.8,2,4])
+    # middle column to place the columns in the middle
         
     with col2:
                 login_btn = st.button("Login", key="login_button", use_container_width=True)
                 register_btn = st.button("Register", key="register_button", use_container_width=True)
-
+                # According to user button choice, the required session variables are updated
                 if login_btn:
                     st.session_state.show_login = True
                     st.session_state.show_register = False
@@ -87,8 +95,9 @@ if not st.session_state.logged_in:
                     st.session_state.show_register = True
                     st.session_state.show_login = False
 
-
+    # Provide options for user to enter details based on choice
     left,middle,right= st.columns([1,13,1])
+    # Login form
     if st.session_state.show_login and not st.session_state.logged_in:
            with middle: 
             st.subheader("User Login")
@@ -98,17 +107,18 @@ if not st.session_state.logged_in:
             if st.button("Login", key="login_submit"):
                 sucess, msg= auth.login_user(username, password)
                 if sucess: 
+                    # Update session state after success login
                     st.session_state.logged_in = True
                     st.session_state.username = username
                     st.success(msg)
                     st.session_state.show_login = False
-                    st.rerun()
+                    st.rerun() # Refresh the UI
                 else:
                     st.error(msg)
 
     
     
-
+    # Register form
     if st.session_state.show_register and not st.session_state.logged_in:
            with middle: 
             st.subheader("User Register")
@@ -123,8 +133,11 @@ if not st.session_state.logged_in:
                     st.session_state.show_register = False
                 else:
                     st.error(msg)
+
+# This is displayed if user login successfully                     
 elif st.session_state.logged_in: 
     time.sleep(1)
+    # Implementation of html and css designs
     st.markdown(f"""
     <div style="
         display: flex;
@@ -155,7 +168,7 @@ elif st.session_state.logged_in:
     
   
     
-    # Use columns to present the domains side-by-side
+    # Use columns to present the domains brief info side-by-side
     col1,col2, col3 = st.columns(3)
     
     with col1:
@@ -177,7 +190,7 @@ elif st.session_state.logged_in:
 
 
 
-      
+# Produce a logout option for user       
 if st.session_state.logged_in:
     st.sidebar.title(f"Welcome, {st.session_state.username} 👋")
     

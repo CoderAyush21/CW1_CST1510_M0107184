@@ -7,7 +7,8 @@ import time
 
 from google import genai
 from google.genai import types
-# Use of gemini API
+
+# Get API key
 client_dataset= genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 
@@ -23,6 +24,7 @@ st.set_page_config(
 
 st.title("DATA SCIENCE ANALYTICS DASHBOARD")
 
+# Show this message if the user is not yet logged in and tries to access this page
 if st.session_state.get("logged_in") != True:
     st.error("Please Log in to access the DataScience Page !")
 
@@ -33,6 +35,8 @@ if st.session_state.get("logged_in") != True:
 
 db = DatabaseManager("DATA/intelligence_platform.db")
 db.connect()
+
+# Load datasets from database and converts them to Dataset objects
 
 def load_datasets() -> list[Dataset]:
     rows = db.fetch_all(
@@ -51,9 +55,10 @@ def load_datasets() -> list[Dataset]:
         datasets_list.append(dataset)
     return datasets_list
 
-
+# get all datasets
 datasets = load_datasets()
 
+# Datasets are converted from objects to dataframes to be displayed as charts and graphs
 df_datasets = pd.DataFrame([{
     "dataset_id": d.get_id(),
     "name": d.get_name(),
@@ -112,6 +117,7 @@ with col1:
 
     st.plotly_chart(fig, width="stretch")
 
+# get all the required queries and db connection is passed to each of them
 df_datasets_by_uploader= get_datasets_by_uploader(db)
 df_dataset_upload_trends= get_dataset_upload_trends_monthly(db)
 col1,col2= st.columns([0.5,0.5])
@@ -165,6 +171,7 @@ with col1:
         if submitted:
             dataset_added_datetime= datetime.now().date()
             try :
+                # create an object of type Dataset using the values provided by user
                 new_dataset = Dataset(
                     dataset_id=None,
                     name=name,
@@ -173,6 +180,7 @@ with col1:
                     uploaded_by=uploaded_by,
                     upload_date=dataset_added_datetime
                 )
+                # insert method called to insert the object to the database using the required connection in the DatabaseManager class
                 new_dataset.insert_dataset(db)
                 st.success("Dataset added")
                 time.sleep(2)
@@ -190,8 +198,10 @@ with col1:
 
         if updated:
             try:
+                # Fetch the dataset object from the database
                 dataset_to_update = Dataset.load_by_id(db, dataset_id)
                 if dataset_to_update:
+                    # Update the dataset name in the database
                     dataset_to_update.update_name(db, new_name)
                     st.success("Dataset Name updated")
                     time.sleep(2)
@@ -210,9 +220,11 @@ with col1:
             submitted= st.form_submit_button("Delete Dataset")
 
             if submitted:
-                if st.checkbox("Confirm deletion of dataset"):                
+                if st.checkbox("Confirm deletion of dataset"):   
+                    # Load dataset from database             
                     dataset_to_delete = Dataset.load_by_id(db, dataset_id)
                     if dataset_to_delete:
+                            # Delete dataset record
                             dataset_to_delete.delete(db)
                             st.success("Dataset deleted")
                             time.sleep(2)
@@ -231,13 +243,17 @@ with col1:
             # Display the csv file
             st.write("CSV file contents preview")
             st.dataframe(csv_df)
-
+            
+            # Required columns for successful import
             required_columns= {"dataset_id","name,rows","columns","uploaded_by","upload_date"}
             csv_columns= set(csv_df.columns)
-
+            
+            # Identify missing and extra columns
             missing_column= required_columns - csv_columns
             extra_column= csv_columns - required_columns
 
+
+            # Warn user if extra columns are found
             if missing_column:
                 st.error(f"Missing required column(s) : {', '.join(missing_column)}")
                 st.stop()
@@ -247,6 +263,8 @@ with col1:
             st.success("CSV file validated")
 
             if st.button("Upload CSV"):
+
+                # Insert CSV records into the database
                 for _, row in csv_df.iterrows():
                         dataset = Dataset(
                             dataset_id=None,
@@ -328,7 +346,7 @@ with col1:
                 full_reply+= chunk.text
                 container.markdown(full_reply)
 
-
+# logout option in sidebar
 if st.session_state.get("logged_in", False):
     if st.sidebar.button("Logout", key="logout_btn"):
         st.session_state.logged_in = False

@@ -2,11 +2,12 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
+# Get the API key 
 client= genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 st.subheader("🤖  AI Chatbot")
 
-
+# Show this message if the user is not yet logged in and tries to access this page
 if st.session_state.get("logged_in") != True:
     st.error("Please Log in to access the AI Chatbot ! ")
 

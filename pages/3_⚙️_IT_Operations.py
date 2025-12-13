@@ -7,21 +7,24 @@ import time
 
 from google import genai
 from google.genai import types
-# Use of gemini API
+
+
+# Get API key
 client_ticket= genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 from app.advanced_services.database_manager import DatabaseManager
 from models.tickets_class import IT_Ticket
-
-
 
 st.set_page_config(
     page_title="IT Operations",
     layout="wide",
 )
 
+
 st.title("IT OPERATIONS DASHBOARD")
 
+
+# Show this message if the user is not yet logged in and tries to access this page
 if st.session_state.get("logged_in") != True:
     st.error("Please Log in to access the IT Operations Page !")
     if st.button("Return to Home Page"):
@@ -31,6 +34,7 @@ if st.session_state.get("logged_in") != True:
 db = DatabaseManager("DATA/intelligence_platform.db")
 db.connect()
 
+# Load tickets from database and converts them to IT_Ticket objects
 
 def load_tickets() -> list[IT_Ticket]:
     rows = db.fetch_all(
@@ -50,7 +54,7 @@ def load_tickets() -> list[IT_Ticket]:
         tickets_list.append(ticket)
     return tickets_list
 
-
+# get all tickets
 tickets = load_tickets()
 
 df_ticket = pd.DataFrame([{
@@ -108,13 +112,13 @@ with col3:
 
     
       
-
+# display graphs for different queries
 col1,col2= st.columns([0.8,0.2])
 with col1:
 
     st.subheader("Service Desk Performance: Average Resolution Time by Staff Members")
     df_resolution_times = get_avg_resolution_by_staff(db)
-
+    # bar chart display using plotly
     fig = px.bar(
         df_resolution_times,
         x="assigned_to",
@@ -155,7 +159,7 @@ with col1:
     st.plotly_chart(fig2, width = "stretch")
 
 
-
+# get required queries and pass db connection to them 
 df_priority_level = get_tickets_by_priority(db)
 col1,col2= st.columns([0.5,0.5])
 with col2:
@@ -223,6 +227,7 @@ with col1:
         if submitted:
             ticket_datetime= datetime.now()
             try :
+                # create an object of type IT_Ticket using the values provided by user
                 ticket = IT_Ticket(
                     ticket_id=None,
                     priority=priority,
@@ -232,6 +237,7 @@ with col1:
                     resolution_time_hours=resolution_time,
                     created_at=datetime.now()
                 )
+                # insert method called to insert the object to the database using the required connection in the DatabaseManager class
                 ticket.insert_ticket(db)
                 st.success("Ticket added")
                 time.sleep(2)
@@ -247,8 +253,10 @@ with col1:
             updated = st.form_submit_button("Update Status")
         if updated:
             try:
+                # Fetch the it ticket object from the database
                 ticket = IT_Ticket.load_by_id(db, ticket_id)
                 if ticket and ticket.update_status(db, new_status):
+                    # Update the ticket in the database
                     st.success("Ticket status updated")
                     time.sleep(2)
                     st.rerun()
@@ -265,9 +273,11 @@ with col1:
             submitted= st.form_submit_button("Delete")
 
             if submitted:
-                if st.checkbox("Confirm deletion of ticket"):                
+                if st.checkbox("Confirm deletion of ticket"):  
+                    # Load it ticket from database               
                     ticket = IT_Ticket.load_by_id(db, ticket_id)
                     if ticket and ticket.delete(db):
+                            # Delete ticket record
                             st.success("Ticket deleted")
                             time.sleep(2)
                             st.rerun()
@@ -285,13 +295,17 @@ with col1:
             # Display the csv file
             st.write("CSV file contents preview")
             st.dataframe(csv_df)
-
+            
+            # Required columns for successful import
             required_columns= {"ticket_id","priority","description","status","assigned_to","resolution_time_hours","created_at"}
             csv_columns= set(csv_df.columns)
-
+            
+            # Identify missing and extra columns
             missing_column= required_columns - csv_columns
             extra_column= csv_columns - required_columns
 
+            
+            # Warn user if extra columns are found
             if missing_column:
                 st.error(f"Missing required column(s) : {', '.join(missing_column)}")
                 st.stop()
@@ -301,6 +315,7 @@ with col1:
             st.success("CSV file validated")
 
             if st.button("Upload CSV"):
+                # Insert CSV records into the database
                 for _, row in csv_df.iterrows():
                         ticket = IT_Ticket(
                             ticket_id=None,

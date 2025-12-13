@@ -1,22 +1,36 @@
 from typing import Optional, Tuple
 import bcrypt
+
+# import the class DatabaseManager to allow connection to the database
 from app.advanced_services.database_manager import DatabaseManager
 
 
 class PasswordHasher:
     """
-    Class to manage hashing of passwords
+    Separate Class from the Auth Manager Class to manage hashing of passwords - improve usability and make the code clearer
 
     """
-
+    
+    '''
+    Static methods hash password and check password 
+    Can be called by class name itself
+    More like a helper function- does not depend on an object/instance
+    '''
     @staticmethod
     def hash_password(plain: str) -> str:
+
+        '''
+        This method is to produce hashed password from a plain-text password using bcrypt methods
+        '''
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(plain.encode("utf-8"), salt)
         return hashed.decode("utf-8")
 
     @staticmethod
     def check_password(plain: str, hashed: str) -> bool:
+        '''
+        Checks whether a user-entered password matches its stored hashed version and returns the required value
+        '''
         return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
@@ -25,26 +39,41 @@ class AuthManager:
     Class to manage user registration, login and validation
 
     """
+    
+    '''
+    Constructor that gets an instance of type DatabaseManager to manage connection
 
+    '''
     def __init__(self, db: DatabaseManager):
         self.db = db
 
-    # ----------------------------
-    # Username validation
-    # ----------------------------
+    '''
+    Static method/Helper function - to validate the username using required validation techniques
+
+    '''
     @staticmethod
     def validate_username(username: str) -> Tuple[bool, str]:
+        '''
+        Checks for length of username and characters and return a tuple message
+
+        '''
         if len(username) < 3:
             return False, "Username must be at least 3 characters long."
         if not username.isidentifier():
             return False, "Username contains invalid characters."
         return True, "Valid username."
 
-    # ----------------------------
-    # Password validation
-    # ----------------------------
+    '''
+
+    Static method/Helper function - to validate the password using required validation techniques
+
+    '''
     @staticmethod
     def validate_password(password: str) -> Tuple[bool, str]:
+        '''
+        Checks for different requirements for the user-entered password and returns required message
+
+        '''
         if " " in password:
             return False, "Password cannot contain spaces."
         if len(password) <= 8:
@@ -59,7 +88,10 @@ class AuthManager:
             return False, "Password must contain at least one special character."
         return True, "Strong password."
 
+    '''
+    Checks if the user alrady exists in the database when the user is registering
 
+    '''
     def user_exists(self, username: str) -> bool:
         row = self.db.fetch_one(
             "SELECT 1 FROM users WHERE username = ?", (username,)
@@ -68,7 +100,10 @@ class AuthManager:
 
 
 
+    '''
+    Function to register a new user
 
+    '''
     def register_user(self, username: str, password: str, role: str = "user") -> Tuple[bool, str]:
         # Validate username
         is_valid, msg = self.validate_username(username)
@@ -101,8 +136,15 @@ class AuthManager:
 
         return True, f"User '{username}' registered successfully with ID {user_id}. You can now Login ! "
 
+    '''
+    Function to allow user to login to the system
 
+    '''
     def login_user(self, username: str, password: str) -> Tuple[bool, str]:
+        '''
+        Look for the username entered in the database
+
+        '''
         row = self.db.fetch_one(
             "SELECT password_hash, role FROM users WHERE username = ?",
             (username,)
@@ -112,7 +154,10 @@ class AuthManager:
             return False, "Username not found!"
 
         password_hash_db, role_db = row
-
+        '''
+        Use helper function from Password Hasher to ensure correct password entered in a secured way
+        
+        '''
         if PasswordHasher.check_password(password, password_hash_db):
             return True, f"Login successful for Role {role_db}!"
         else:

@@ -1,9 +1,20 @@
 from datetime import datetime
 
+'''
+    Class represents an Incident entity stored in the database
+    -> Uses encapsulation to keep data secured using the '__' before attributes
+    -> Declare getters to access the attributes
+
+'''
 
 class SecurityIncident :
 
     def __init__(self, incident_id, incident_type, severity, status, description,reported_by=None, timestamp=None):
+
+        '''
+        Constructor to initialise an Incident object
+        -> Use of private attributes declaration techniques
+        '''
 
         self.__id = incident_id
         self.__incident_type = incident_type
@@ -12,6 +23,8 @@ class SecurityIncident :
         self.__description = description
         self.__reported_by = reported_by
         self.__timestamp = timestamp
+    
+    # Getters to return the required attributes
     
     def get_id(self) -> int:
         return self.__id
@@ -34,9 +47,18 @@ class SecurityIncident :
     def get_timestamp(self) -> str:
         return self.__timestamp
 
+    '''
+    Use of classmethod since it creates and returns value without needing to create an instance to use it
 
+    '''
     @classmethod
     def load_by_id(cls, db, incident_id):
+
+        '''
+        Loads an Incident object from the database using its ID.
+
+        '''
+                
 
         sql = """
             SELECT * FROM cyber_incidents

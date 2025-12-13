@@ -8,12 +8,13 @@ import time
 
 from google import genai
 from google.genai import types
-# Use of gemini API
+
+
+# Get the API key
 client_incident= genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 
 # Import Database manager and SecurityIncident class
-
 
 from app.advanced_services.database_manager import DatabaseManager
 from models.security_incident import SecurityIncident
@@ -21,7 +22,7 @@ from models.security_incident import SecurityIncident
 db = DatabaseManager("DATA/intelligence_platform.db")
 db.connect()
 
-
+# set page title
 st.set_page_config(
     page_title="Cybersecurity",
     layout="wide",
@@ -29,13 +30,14 @@ st.set_page_config(
 
 st.title("CYBERSECURITY INTELLIGENCE DASHBOARD")
 
-
+# Show this message if the user is not yet logged in and tries to access this page
 if st.session_state.get("logged_in") != True:
     st.error("Please Log in to access the Cybersecurity Page !")
     if st.button("Return to Home Page"):
      st.switch_page("Home.py")
     st.stop()
 
+# Load incidents from database and converts them to SecurityIncident objects
 
 def load_incidents() -> list[SecurityIncident]:
     rows = db.fetch_all(
@@ -56,10 +58,10 @@ def load_incidents() -> list[SecurityIncident]:
         incidents_list.append(incident)
     return incidents_list
 
+# This get all the incident objects
 incidents = load_incidents()
 
 # Incidents are converted from objects to dataframes to be displayed as charts and graphs
-
 
 df_incidents = pd.DataFrame([{
     "incident_id": i.get_id(),
@@ -76,11 +78,12 @@ df_incidents['timestamp'] = pd.to_datetime(df_incidents['timestamp'], errors='co
 
 
 
-
+# filter phishing related incidents
 df_phishing = df_incidents[
     df_incidents['category'].str.contains('Phishing', case=False, na=False)
 ]
 
+# Weekly phishing trends
 phishing_trend = (
     df_phishing
     .set_index('timestamp') # Use 'timestamp' for the index
@@ -88,25 +91,31 @@ phishing_trend = (
     .count()
     .rename('Incidents Count')
 )
+
  # To display metric for the incidents
 current_total_incidents = len(df_incidents)
 total_phishing = len(df_phishing)
 current_phishing_percentage = (total_phishing / current_total_incidents * 100) if current_total_incidents > 0 else 0
+
  # Initialize previous values in session state if not present
+
 if "previous_total_incidents" not in st.session_state:
     st.session_state.previous_total_incidents = current_total_incidents
 if "previous_phishing_percentage" not in st.session_state:
     st.session_state.previous_phishing_percentage = current_phishing_percentage
 
 # Calculate deltas using current and previous values
+
 total_incidents_delta = current_total_incidents - st.session_state.previous_total_incidents
 phishing_percent_delta = current_phishing_percentage - st.session_state.previous_phishing_percentage
 phishing_percent_delta_str = f"{phishing_percent_delta:.1f}%"
 
 
 # Get high severity incidents + find total
+
 high_severity= get_high_severity_incidents(db)
 total_high_severity= len(high_severity)
+
 # Display insights
 
 st.subheader("Cyber Incidents Insights")
@@ -149,7 +158,9 @@ status_counts = df_incidents["status"].value_counts().reset_index()
 status_counts.columns = ["status", "count"]
 
 col1,col2= st.columns([0.6,0.4])
+
 # Display Cyber Incidents Status using Bar Chart
+
 with col1:
    st.markdown("### Cyber Incidents Status Distribution")
    st.bar_chart(status_counts.set_index("status"))
@@ -162,7 +173,9 @@ with col2:
     # assign resolved and active statuses
     resolved_statuses = ['Closed', 'Resolved']
     active_statuses = ['Open', 'In Progress']
+
     # calculate counts for pie chart
+
     resolved_count = status_counts[status_counts['status'].isin(resolved_statuses)]['count'].sum()
     active_count = status_counts[status_counts['status'].isin(active_statuses)]['count'].sum()
 
@@ -171,7 +184,7 @@ with col2:
     'Count': [resolved_count, active_count]
         })
     st.markdown("### Cyber Incidents Status Summary")   
-
+    # Pie chart details
     fig = px.pie(
                 df_pie, 
                 values='Count', 
@@ -180,22 +193,27 @@ with col2:
                 hole = 0.45 
             )
     
+    # update layout of the pie chart
     fig.update_layout(
         width=325,
         height=325,
         margin=dict(t=30)
     )
+
+    # Add text and update style for text appearing on pie chart
     fig.update_traces(
         textinfo='percent',
         hovertemplate='<b>%{label}</b><br>Count: %{value}<br>Percent: %{percent}',
         marker=dict(line=dict(color='white', width=2))
     )
+    
 
     st.plotly_chart(fig, width= "stretch")
 
 
 
-
+# get the required queries to display the required visuals
+# Pass the Database Manager db connection
 df_many_cases = get_incident_types_with_many_cases(db, min_count=5)
 col1,col2= st.columns([0.9,0.1])
 with col1:
@@ -212,7 +230,7 @@ with col1:
                 height=400
             )
             
-
+            # Update layout of graph
             fig_bar.update_layout(
                 xaxis_title="Number of Cases",
                 yaxis_title="Incident Category",
@@ -224,7 +242,7 @@ with col1:
             st.info(f"No incident types found with more than minimum number of cases.")
 
 
-
+# get high severity by status query
 df_high_sev_status = get_high_severity_by_status(db)
 
 # Display Cyber Incidents Bar Chart by Severity
@@ -232,7 +250,7 @@ col1,col2= st.columns([0.6,0.4])
 with col1:
     st.markdown("### High Severity Incidents by Status")
 
-    
+    # Bar chart represenation for the query
     fig = px.bar(
         df_high_sev_status,
         x="status",
@@ -248,6 +266,8 @@ with col1:
             line=dict(width=1.2, color="#003F88"),  
         )
     )
+
+    # Update the layout to ensure a good look of the chart
 
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",  
@@ -270,6 +290,7 @@ all_incident_ids = [i.get_id() for i in incidents]
 st.subheader("Cyber Incidents Management")
 col1,col2= st.columns([0.8,0.2])
 with col1:
+    # Provide a choice for user
     action_choice = st.selectbox("Select Action", ([" Add Incident", " Update Status", "Delete Incident","Upload CSV"]), key="action_choice")
 
 
@@ -286,6 +307,7 @@ with col1:
 
         if submitted:
             incident_datetime= datetime.now()
+            # create an object of type SecurityIncident using the values provided by user
             new_incident = SecurityIncident(
                 incident_id=None,
                 incident_type=category,
@@ -296,6 +318,7 @@ with col1:
                 timestamp=incident_datetime
             )
             try :
+                # insert method called to insert the object to the database using the required connection in the DatabaseManager class
                 new_incident.insert(db)
                 st.success("Incident added")
                 time.sleep(2)
@@ -304,6 +327,7 @@ with col1:
                 st.error(f"Error adding incident: {e}")
 
     elif action_choice == " Update Status":
+        # Update status form
         st.markdown("### Update Incident Status")
         with st.form("Update incident status"):
             incident_id = st.selectbox("Incident ID", all_incident_ids)
@@ -311,8 +335,10 @@ with col1:
             updated = st.form_submit_button("Update Status")
         if updated:
             try:
+                # Fetch the incident object from the database
                 incident_fetched = SecurityIncident.load_by_id(db, incident_id)
                 if incident_fetched:
+                    # Update the incident status in the database
                     success= incident_fetched.update_status(db,new_status)
                     if success :
                         st.success("Update Successfull")
@@ -324,6 +350,7 @@ with col1:
                 st.error(f"Error updating incident: {e}")
 
     elif action_choice == "Delete Incident":
+        # Delete Incident option
         st.markdown("### Delete Cyber Incident")
         with st.form("Delete incident"):
             incident_id= st.selectbox("Incident ID to Delete", all_incident_ids, key="delete_incident_id")
@@ -331,9 +358,11 @@ with col1:
             submitted= st.form_submit_button("Delete Incident")
 
             if submitted:
-                if st.checkbox("Confirm deletion of incident"):                
+                if st.checkbox("Confirm deletion of incident"):  
+                    # Load incident from database              
                     deleted_incident = SecurityIncident.load_by_id(db, incident_id)
                     if deleted_incident:
+                            # Delete incident record
                             success= deleted_incident.delete(db)
                             if success:
                                 st.success("Incident deleted")
@@ -345,6 +374,7 @@ with col1:
                     st.warning("Please confirm deletion by checking the box.")
 
     elif action_choice == "Upload CSV" :
+        # Upload CSV option
         st.markdown("### Upload CSV")
         uploaded_file= st.file_uploader("Upload CSV file", type= ["csv"])
         if uploaded_file:
@@ -354,12 +384,17 @@ with col1:
             st.write("CSV file contents preview")
             st.dataframe(csv_df)
 
+            # Required columns for successful import
+
             required_columns= {"incident_id","timestamp","severity", "category", "status", "description"}
             csv_columns= set(csv_df.columns)
+
+            # Identify missing and extra columns
 
             missing_column= required_columns - csv_columns
             extra_column= csv_columns - required_columns
 
+            # Warn user if extra columns are found
             if missing_column:
                 st.error(f"Missing required column(s) : {', '.join(missing_column)}")
                 st.stop()
@@ -369,6 +404,9 @@ with col1:
             st.success("CSV file validated")
 
             if st.button("Upload CSV"):
+
+                # Insert CSV records into the database
+
                 for _, row in csv_df.iterrows():
                     incident_csv = SecurityIncident(
                         incident_id=None,                        
@@ -452,7 +490,7 @@ with col1:
                 full_reply+= chunk.text
                 container.markdown(full_reply)
 
-
+# Logout option in the sidebar
 if st.session_state.get("logged_in", False):
     
     if st.sidebar.button("Logout", key="logout_btn"):
