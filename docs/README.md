@@ -57,7 +57,7 @@
 2. Inside it, create a file called `secrets.toml`
 3. Add the following content:
 
-API_KEY = "your_api_key_here"
+GEMINI_API_KEY = "your_api_key_here"
 
 
   # Week 11 : OOP implementation
