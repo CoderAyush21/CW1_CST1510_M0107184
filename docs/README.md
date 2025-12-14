@@ -50,6 +50,16 @@
 
 -Real-time AI evaluation embedded within Streamlit dashboards.
 
+## How to use local API to run the Gemini API
+## API Setup Instructions
+
+1. Create a folder called `.streamlit`
+2. Inside it, create a file called `secrets.toml`
+3. Add the following content:
+
+API_KEY = "your_api_key_here"
+
+
   # Week 11 : OOP implementation
 ## Refactoring existing codes with some new codes to improve modularity with OOP
 -Use of classes for datasets (Dataset), CyberIncidents and IT tickets (IT_Ticket).
@@ -59,3 +69,7 @@
 -Database interactions handled via a DatabaseManager class.
 
 -Enhanced maintainability and reusability of code across the platform.
+
+  # How to run the streamlit web page
+  - Use the follwing command on terminal -> streamlit run Home.py
+  
